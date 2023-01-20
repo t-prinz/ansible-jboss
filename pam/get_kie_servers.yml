@@ -1,0 +1,26 @@
+---
+- name: Get list of KIE servers
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: REST call to query for servers
+      uri:
+        force_basic_auth: true
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/business-central/rest/controller/management/servers"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: kie_server_list
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: kie_server_list

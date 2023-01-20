@@ -1,0 +1,64 @@
+---
+#
+# TODO:  Check to make sure the container is instantiated or this will not work
+#
+- name: Get list of containers from PAM
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: REST querty to get dmn model information
+      uri:
+        body_format: json
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/kie-server/services/rest/server/containers/{{ pam_container.container_id }}/dmn"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: dmn_info
+      delegate_to: localhost
+
+    - name: Print dmn_info
+      debug:
+        var: dmn_info.json.result
+        verbosity: 1
+
+    - name: Extract the model namespace based on the provided model name
+      set_fact:
+        pam_test_scenario: "{{ pam_test_scenario | combine( {'model-namespace' : item['model-namespace'] } ) }}"
+      with_items: "{{ dmn_info.json.result['dmn-model-info-list']['models'] }}"
+      when: item['model-name'] == pam_test_scenario['model-name']
+
+    - name: print pam_test_scenario
+      debug:
+        var: pam_test_scenario
+        verbosity: 1
+
+    - name: REST call to run the model
+      uri:
+        body: "{{ pam_test_scenario | to_json }}"
+        body_format: json
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: POST
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/kie-server/services/rest/server/containers/{{ pam_container.container_id }}/dmn"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: model_output
+      delegate_to: localhost
+
+    - name: Print model result
+      debug:
+        var: model_output.json.result

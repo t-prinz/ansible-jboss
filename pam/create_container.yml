@@ -1,0 +1,36 @@
+---
+# TODO: make this idempotent - it will fail if the container exists
+- name: Create container
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: Print container ID
+      debug:
+        var: pam_container.container_id
+
+    - name: Print container configuration
+      debug:
+        var: pam_container.container_config
+
+    - name: REST call to create the container
+      uri:
+        body: "{{ pam_container.container_config | to_json }}"
+        body_format: json
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: PUT
+        return_content: true
+        status_code:
+          - 201
+        url: "http://{{ pam_server }}:8080/kie-server/services/rest/server/containers/{{ pam_container.container_id }}"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: uri_output
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: uri_output

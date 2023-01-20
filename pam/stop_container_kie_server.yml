@@ -1,0 +1,68 @@
+---
+- name: Stop a container running in a KIE server
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: REST call to query for servers
+      uri:
+        force_basic_auth: true
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/business-central/rest/controller/management/servers"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: kie_server_list
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: kie_server_list
+        verbosity: 1
+
+    - name: Print target KIE server name
+      debug:
+        var: pam_container.target_kie_server_name
+        verbosity: 1
+
+    - name: Extract the target server ID
+      set_fact:
+        target_kie_server_id: "{{ item['server-id'] }}"
+      with_items: "{{ kie_server_list.json['server-template'] }}"
+      when: pam_container.target_kie_server_name == item['server-name']
+
+    - name: Print KIE server ID
+      debug:
+        msg: "Target server ID - {{ target_kie_server_id }}"
+        verbosity: 1
+
+    - name: Print info for KIE container to stop
+      debug:
+        var: pam_kie_container
+
+    - name: REST call to stop KIE container
+      uri:
+        force_basic_auth: true
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: POST
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/business-central/rest/controller/management/servers/{{ target_kie_server_id }}/containers/{{ pam_kie_container['container-id'] }}/status/stopped"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: stopped_results
+      delegate_to: localhost
+
+    - name: Print REST call results
+      debug:
+        var: stopped_results

@@ -1,0 +1,29 @@
+---
+- name: Delete container
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: Print container ID
+      debug:
+        var: pam_container.container_id
+
+    - name: REST call to delete the container
+      uri:
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: DELETE
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/kie-server/services/rest/server/containers/{{ pam_container.container_id }}"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: uri_output
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: uri_output

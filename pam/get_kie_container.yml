@@ -1,0 +1,63 @@
+---
+- name: Get information about a specified KIE container for a specified KIE server template
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: REST call to query for servers
+      uri:
+        force_basic_auth: true
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/business-central/rest/controller/management/servers"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: kie_server_list
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: kie_server_list
+        verbosity: 1
+
+    - name: Print target KIE server name
+      debug:
+        var: pam_container.target_kie_server_name
+        verbosity: 1
+
+    - name: Extract the target server ID
+      set_fact:
+        target_kie_server_id: "{{ item['server-id'] }}"
+      with_items: "{{ kie_server_list.json['server-template'] }}"
+      when: pam_container.target_kie_server_name == item['server-name']
+
+    - name: Print KIE server ID
+      debug:
+        msg: "Target server ID - {{ target_kie_server_id }}"
+
+    - name: REST call to query KIE container information
+      uri:
+        force_basic_auth: true
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/business-central/rest/controller/management/servers/{{ target_kie_server_id }}/containers/{{ pam_container.container_id }}"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: kie_container_info
+      delegate_to: localhost
+
+    - name: Print KIE container information
+      debug:
+        var: kie_container_info

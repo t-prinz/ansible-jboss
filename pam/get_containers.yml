@@ -1,0 +1,26 @@
+---
+- name: Get list of containers
+  hosts: "{{ hostlist | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: REST call to query for containers
+      uri:
+        body_format: json
+        headers:
+          content-type: application/json
+          accept: application/json
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+        url: "http://{{ pam_server }}:8080/kie-server/services/rest/server/containers"
+        url_password: "{{ pam_password }}"
+        url_username: "{{ pam_username }}"
+        validate_certs: no
+      register: uri_output
+      delegate_to: localhost
+
+    - name: Print output
+      debug:
+        var: uri_output

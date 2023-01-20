@@ -1,0 +1,55 @@
+---
+pam_server: "{{ ansible_host }}"
+pam_username: "{{ vault_pam_username }}"
+pam_password: "{{ vault_pam_password }}"
+pam_container:
+  container_id: "traffic-violation_1.0.0-SNAPSHOT"
+  container_config:
+    config-items:
+      - itemName: "KBase"
+        itemType: "BPM"
+        itemValue: ""
+      - itemName: "KSession"
+        itemType: "BPM"
+        itemValue: ""
+      - itemName: "MergeMode"
+        itemType: "BPM"
+        itemValue: "MERGE_COLLECTIONS"
+      - itemName: "RuntimeStrategy"
+        itemType: "BPM"
+        itemValue: "SINGLETON"
+    release-id:
+      artifact-id: "traffic-violation"
+      group-id: "traffic-violation"
+      version: "1.0.0-SNAPSHOT"
+    scanner:
+      poll-interval: null
+      status: "DISPOSED"
+  target_kie_server_name: default-kieserver
+pam_kie_container:
+  container-id: "{{ pam_container.container_id }}"
+  container-name: "{{ pam_container.container_config['release-id']['artifact-id'] }}"
+  release-id: "{{ pam_container.container_config['release-id'] }}"
+  configuration:
+    PROCESS:
+      org.kie.server.controller.api.model.spec.ProcessConfig:
+        kbase: ""
+        ksession: ""
+        mergeMode: "MERGE_COLLECTIONS"
+        runtimeStrategy: "SINGLETON"
+    RULE:
+      org.kie.server.controller.api.model.spec.RuleConfig:
+        pollInterval: null
+        scannerStatus: "STOPPED"
+  server-template-key: null
+  status: ""
+pam_test_scenario:
+  model-namespace: ""
+  model-name: "Traffic Violation"
+  dmn-context:
+    Driver:
+      Points: 15
+    Violation:
+      Type: "speed"
+      Actual Speed: 135
+      Speed Limit: 100
