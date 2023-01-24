@@ -15,6 +15,7 @@ steps:
 - script: |
     echo aap_username: $(aap_username)
     echo aap_automationcontroller_uri: $(aap_automationcontroller_uri)
+    echo curl: `which curl`
   displayName: 'Display script variables'
 
 - script: |
