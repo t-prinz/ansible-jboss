@@ -1,0 +1,22 @@
+# Pipeline to deploy PAM workflow using Ansible
+# Additional reference:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo aap_username: $(aap_username)
+    echo aap_automationcontroller_uri: $(aap_automationcontroller_uri)
+  displayName: 'Display script variables'
+
+- script: |
+    curl -s -k -u '$(aap_username):$(aap_admin_password)' -H 'Content-Type: application/json' -X POST $(aap_automationcontroller_uri)/api/v2/job_templates/49/launch/
+  displayName: 'Execute template to get list of containers'
