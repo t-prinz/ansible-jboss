@@ -24,7 +24,7 @@
     - name: Print output
       debug:
         var: kie_server_list
-        verbosity: 1
+#        verbosity: 1
 
     - name: Print target KIE server name
       debug:
