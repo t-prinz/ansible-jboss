@@ -9,9 +9,6 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
 - script: |
     echo aap_username: $(aap_username)
     echo aap_automationcontroller_uri: $(aap_automationcontroller_uri)
@@ -19,6 +16,5 @@ steps:
   displayName: 'Display script variables'
 
 - script: |
-    curl -s -k -u '$(aap_username):$(aap_admin_password)' -H 'Content-Type: application/json' -X POST $(aap_automationcontroller_uri)/api/v2/job_templates/49/launch/
     curl -s -k -u '$(aap_username):$(aap_admin_password)' -H 'Content-Type: application/json' -X POST $(aap_automationcontroller_uri)/api/v2/workflow_job_templates/53/launch/
   displayName: 'Execute templates to redeploy container to KIE server'
