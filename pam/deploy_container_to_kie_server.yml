@@ -1,5 +1,4 @@
 ---
-# TODO: update so that play is idempotent - container cannot be deployed
 - name: Deploy a container to a KIE server
   hosts: "{{ hostlist | default('all') }}"
   gather_facts: false
@@ -46,6 +45,7 @@
     - name: Print info for KIE container to deploy
       debug:
         var: pam_kie_container
+        verbosity: 1
 
     - name: Update status field
       set_fact:
@@ -91,7 +91,8 @@
         validate_certs: no
       register: deployment_results
       delegate_to: localhost
+      ignore_errors: true
 
-    - name: REST call to deploy KIE container
+    - name: Display REST call results
       debug:
         var: deployment_results

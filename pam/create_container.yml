@@ -1,5 +1,4 @@
 ---
-# TODO: make this idempotent - it will fail if the container exists
 - name: Create container
   hosts: "{{ hostlist | default('all') }}"
   gather_facts: false
@@ -30,7 +29,8 @@
         validate_certs: no
       register: uri_output
       delegate_to: localhost
+      ignore_errors: true
 
-    - name: Print output
+    - name: Display REST call results
       debug:
         var: uri_output

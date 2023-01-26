@@ -24,7 +24,7 @@
     - name: Print output
       debug:
         var: kie_server_list
-#        verbosity: 1
+        verbosity: 1
 
     - name: Print target KIE server name
       debug:
@@ -40,13 +40,14 @@
     - name: Print KIE server ID
       debug:
         msg: "Target server ID - {{ target_kie_server_id }}"
+        verbosity: 1
 
     - name: Print info for KIE container to stop
       debug:
         var: pam_kie_container
         verbosity: 1
 
-    - name: REST call to stop KIE container
+    - name: REST call to delete KIE container
       uri:
         force_basic_auth: true
         headers:
@@ -62,6 +63,7 @@
         validate_certs: no
       register: delete_results
       delegate_to: localhost
+      ignore_errors: true
 
     - name: Print REST call results
       debug:
